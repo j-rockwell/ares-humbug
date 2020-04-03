@@ -2,10 +2,7 @@ package com.llewkcor.ares.humbug.cont;
 
 import com.google.common.collect.Sets;
 import com.llewkcor.ares.humbug.Humbug;
-import com.llewkcor.ares.humbug.cont.mods.ElevatorMod;
-import com.llewkcor.ares.humbug.cont.mods.KitMod;
-import com.llewkcor.ares.humbug.cont.mods.MobstackMod;
-import com.llewkcor.ares.humbug.cont.mods.WorldMod;
+import com.llewkcor.ares.humbug.cont.mods.*;
 import lombok.Getter;
 
 import java.util.Set;
@@ -22,6 +19,7 @@ public final class ModManager {
         mods.add(new ElevatorMod(plugin));
         mods.add(new MobstackMod(plugin));
         mods.add(new KitMod(plugin));
+        mods.add(new KnockbackMod(plugin));
     }
 
     public void load() {

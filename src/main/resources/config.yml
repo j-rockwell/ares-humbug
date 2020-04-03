@@ -42,3 +42,8 @@ mods:
       - '373:16456'
       - '373:16460'
       - '373:16428'
+  knockback:
+    enabled: true
+    values:
+      horizontal: 1.0
+      vertical: 1.0
