@@ -1,16 +1,17 @@
 package com.llewkcor.ares.humbug.cont.mods;
 
-import com.llewkcor.ares.commons.logger.Logger;
 import com.llewkcor.ares.commons.util.general.Configs;
 import com.llewkcor.ares.humbug.Humbug;
 import com.llewkcor.ares.humbug.cont.HumbugMod;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -25,6 +26,7 @@ public final class WorldMod implements HumbugMod, Listener {
     @Getter public final String name = "World";
     @Getter @Setter public boolean enabled;
 
+    @Getter public boolean enderchestDisabled;
     @Getter public boolean blockExplosionsDisabled;
     @Getter public boolean entityBlockChangesDisabled;
     @Getter public boolean firespreadDisabled;
@@ -41,6 +43,7 @@ public final class WorldMod implements HumbugMod, Listener {
         final YamlConfiguration config = Configs.getConfig(plugin, "config");
 
         this.enabled = config.getBoolean("mods.world.enabled");
+        this.enderchestDisabled = config.getBoolean("mods.world.enderchests");
         this.blockExplosionsDisabled = config.getBoolean("mods.world.block_explosions");
         this.entityBlockChangesDisabled = config.getBoolean("mods.world.entity_block_changes");
         this.firespreadDisabled = config.getBoolean("mods.world.fire_spread");
@@ -53,6 +56,31 @@ public final class WorldMod implements HumbugMod, Listener {
     @Override
     public void unload() {
         this.enabled = false;
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+        final Block block = event.getClickedBlock();
+
+        if (block == null || !block.getType().equals(Material.ENDER_CHEST)) {
+            return;
+        }
+
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            return;
+        }
+
+        if (!isEnabled() || !isEnderchestDisabled()) {
+            return;
+        }
+
+        event.setCancelled(true);
+        player.sendMessage(ChatColor.RED + "Enderchests have been disabled");
     }
 
     @EventHandler

@@ -1,6 +1,7 @@
 mods:
   world:
     enabled: true
+    enderchests: true
     block_explosions: true
     entity_block_changes: true
     fire_spread: true
