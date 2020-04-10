@@ -23,6 +23,7 @@ public final class ModManager {
         mods.add(new PotionMod(plugin));
         mods.add(new XPMod(plugin));
         mods.add(new MiningMod(plugin));
+        mods.add(new BotMod(plugin));
     }
 
     public void load() {

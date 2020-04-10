@@ -1,4 +1,7 @@
 mods:
+  bots:
+    limit_connects: true
+    max_conn_per_ip: 2
   world:
     enabled: true
     enderchests: true
