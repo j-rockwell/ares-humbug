@@ -2,6 +2,7 @@ package com.llewkcor.ares.humbug.cont.mods;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.llewkcor.ares.commons.location.BLocatable;
 import com.llewkcor.ares.commons.logger.Logger;
 import com.llewkcor.ares.commons.util.general.Configs;
 import com.llewkcor.ares.humbug.Humbug;
@@ -18,8 +19,9 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -32,11 +34,13 @@ public final class MiningMod implements HumbugMod, Listener {
     @Getter @Setter public boolean enabled;
 
     @Getter public final List<Findable> findables;
+    @Getter public final List<BLocatable> placedStone;
     @Getter public final Random random;
 
     public MiningMod(Humbug plugin) {
         this.plugin = plugin;
         this.findables = Lists.newArrayList();
+        this.placedStone = Lists.newArrayList();
         this.random = new Random();
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -77,6 +81,15 @@ public final class MiningMod implements HumbugMod, Listener {
 
     @Override
     public void unload() {}
+
+    /**
+     * Returns a Block location for any stored stone locations that match the provided Bukkit Block
+     * @param block Bukkit Block
+     * @return Block Location
+     */
+    private BLocatable getStoredStoneLocation(Block block) {
+        return placedStone.stream().filter(stone -> stone.getX() == block.getX() && stone.getY() == block.getY() && stone.getZ() == block.getZ() && stone.getWorldName().equals(block.getWorld().getName())).findFirst().orElse(null);
+    }
 
     /**
      * Returns an Immutable List containing all findables possible at the provided block location
@@ -174,6 +187,71 @@ public final class MiningMod implements HumbugMod, Listener {
         }
 
         run(player, block);
+    }
+
+    @EventHandler (priority = EventPriority.HIGH)
+    public void onStoneBreak(BlockBreakEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        final Block block = event.getBlock();
+        final BLocatable locatable = getStoredStoneLocation(block);
+
+        if (locatable != null) {
+            placedStone.remove(locatable);
+        }
+    }
+
+    @EventHandler (priority = EventPriority.HIGH)
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        event.getBlocks().forEach(block -> {
+            final BLocatable locatable = getStoredStoneLocation(block);
+
+            if (locatable != null) {
+                locatable.setX(block.getX());
+                locatable.setY(block.getY());
+                locatable.setZ(block.getZ());
+                locatable.setWorldName(block.getWorld().getName());
+            }
+        });
+    }
+
+    @EventHandler (priority = EventPriority.HIGH)
+    public void onPistonRetract(BlockPistonRetractEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        event.getBlocks().forEach(block -> {
+            final BLocatable locatable = getStoredStoneLocation(block);
+
+            if (locatable != null) {
+                locatable.setX(block.getX());
+                locatable.setY(block.getY());
+                locatable.setZ(block.getZ());
+                locatable.setWorldName(block.getWorld().getName());
+            }
+        });
+    }
+
+    @EventHandler (priority = EventPriority.HIGH)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        final Block block = event.getBlockPlaced();
+
+        if (block == null || !block.getType().equals(Material.STONE)) {
+            return;
+        }
+
+        placedStone.add(new BLocatable(block));
     }
 
     @AllArgsConstructor
