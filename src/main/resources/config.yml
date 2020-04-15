@@ -7,7 +7,7 @@ mods:
     allowed_links:
       - 'discord'
   bots:
-    limit_connects: true
+    limit_connections: true
     max_conn_per_ip: 2
   world:
     enabled: true

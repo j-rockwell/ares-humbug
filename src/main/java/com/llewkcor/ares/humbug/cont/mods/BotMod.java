@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class BotMod implements HumbugMod, Listener {
     @Getter public final Humbug plugin;
@@ -35,18 +36,20 @@ public final class BotMod implements HumbugMod, Listener {
 
         this.limitConnections = config.getBoolean("mods.bots.limit_connections");
         this.maxConnectionsPerIP = config.getInt("mods.bots.max_conn_per_ip");
+
+        this.enabled = true;
     }
 
     @Override
     public void unload() {
-
+        this.enabled = false;
     }
 
     @EventHandler
     public void onPlayerLogin(AsyncPlayerPreLoginEvent event) {
         final long address = IPS.toLong(event.getAddress().getHostAddress());
 
-        if (isLimitConnections() && getMaxConnectionsPerIP() < getOpenConnections(address)) {
+        if (isEnabled() && isLimitConnections() && getOpenConnections(address) > getMaxConnectionsPerIP()) {
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "Too many accounts connected with your IP address");
         }
     }
@@ -58,7 +61,11 @@ public final class BotMod implements HumbugMod, Listener {
      */
     private int getOpenConnections(long address) {
         final List<Long> addresses = Lists.newArrayList();
+
         Bukkit.getOnlinePlayers().forEach(player -> addresses.add(IPS.toLong(player.getAddress().getAddress().getHostAddress())));
-        return (int) addresses.stream().filter(addr -> addr == address).count();
+
+        final List<Long> match = addresses.stream().filter(addr -> addr == address).collect(Collectors.toList());
+
+        return (match.size() + 1);
     }
 }
