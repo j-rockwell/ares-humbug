@@ -96,7 +96,7 @@ public final class PotionMod implements HumbugMod, Listener {
         double strength = 0.0;
         double weakness = 0.0;
         double sharpness = 0.0;
-        double result = 0.0;
+        double result;
 
         if (hand != null && hand.hasItemMeta() && hand.getItemMeta().hasEnchant(Enchantment.DAMAGE_ALL)) {
             sharpness = hand.getEnchantmentLevel(Enchantment.DAMAGE_ALL) * 1.25;
