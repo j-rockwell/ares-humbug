@@ -47,23 +47,6 @@ public final class PotionMod implements HumbugMod, Listener {
             .put(Material.WOOD_SPADE, 2.0).put(Material.GOLD_SPADE, 2.0).put(Material.STONE_SPADE, 3.0)
             .put(Material.IRON_SPADE, 4.0).put(Material.DIAMOND_SPADE, 5.0).build();
 
-    private final Map<Material, Double> criticalDamageValues = ImmutableMap.<Material, Double> builder()
-            // Swords
-            .put(Material.WOOD_SWORD, 7.5).put(Material.GOLD_SWORD, 7.5).put(Material.STONE_SWORD, 9.0)
-            .put(Material.IRON_SWORD, 10.5).put(Material.DIAMOND_SWORD, 12.0)
-
-            // Axes
-            .put(Material.WOOD_AXE, 6.0).put(Material.GOLD_AXE, 6.0).put(Material.STONE_AXE, 7.5)
-            .put(Material.IRON_AXE, 9.0).put(Material.DIAMOND_AXE, 10.5)
-
-            // Pickaxes
-            .put(Material.WOOD_PICKAXE, 4.5).put(Material.GOLD_PICKAXE, 4.5).put(Material.STONE_PICKAXE, 6.0)
-            .put(Material.IRON_PICKAXE, 7.5).put(Material.DIAMOND_PICKAXE, 9.0)
-
-            // Shovels
-            .put(Material.WOOD_SPADE, 3.0).put(Material.GOLD_SPADE, 3.0).put(Material.STONE_SPADE, 4.5)
-            .put(Material.IRON_SPADE, 6.0).put(Material.DIAMOND_SPADE, 7.5).build();
-
     @Getter public boolean oldHealthEnabled;
     @Getter public boolean oldRegenEnabled;
     @Getter public boolean oldStrengthEnabled;
@@ -92,7 +75,7 @@ public final class PotionMod implements HumbugMod, Listener {
 
     private double calculateFinalDamage(Player player) {
         final ItemStack hand = player.getItemInHand();
-        final double base = (hand != null ? (!player.isOnGround() && player.getVelocity().getY() < 0.0) ? criticalDamageValues.getOrDefault(hand.getType(), 1.0) : baseDamageValues.getOrDefault(hand.getType(), 1.0) : 1.0);
+        final double base = (hand != null ? (!player.isOnGround() && player.getVelocity().getY() < 0.0) ? (baseDamageValues.getOrDefault(hand.getType(), 1.0) * 1.5) : baseDamageValues.getOrDefault(hand.getType(), 1.0) : 1.0);
         double strength = 0.0;
         double weakness = 0.0;
         double sharpness = 0.0;
