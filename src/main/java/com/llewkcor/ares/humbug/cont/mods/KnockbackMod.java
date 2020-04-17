@@ -57,7 +57,7 @@ public final class KnockbackMod implements HumbugMod, Listener {
         PlayerDamagePlayerEvent.getHandlerList().unregister(this);
     }
 
-    @EventHandler
+    @EventHandler (priority = EventPriority.MONITOR)
     public void onPlayerVelocity(PlayerVelocityEvent event) {
         if (!isEnabled() || event.isCancelled()) {
             return;
@@ -77,7 +77,7 @@ public final class KnockbackMod implements HumbugMod, Listener {
         }
     }
 
-    @EventHandler (priority = EventPriority.HIGHEST)
+    @EventHandler (priority = EventPriority.MONITOR)
     public void onPlayerDamagePlayer(PlayerDamagePlayerEvent event) {
         if (!isEnabled() || event.isCancelled()) {
             return;
