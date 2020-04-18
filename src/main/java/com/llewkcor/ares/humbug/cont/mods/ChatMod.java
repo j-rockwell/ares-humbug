@@ -13,8 +13,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
@@ -79,6 +82,34 @@ public final class ChatMod implements HumbugMod, Listener {
         if (isEnabled() && isHideJoinLeaveMessages()) {
             event.setQuitMessage(null);
         }
+    }
+
+    /**
+     * Fixes colored item names breaking death message formatting
+     * @param event PlayerDeathEvent
+     */
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        final Player player = event.getEntity();
+        final Player killer = player.getKiller();
+
+        if (killer == null) {
+            return;
+        }
+
+        final ItemStack hand = killer.getItemInHand();
+
+        if (hand == null || !hand.hasItemMeta() || !hand.getItemMeta().hasDisplayName()) {
+            return;
+        }
+
+        if (ChatColor.getLastColors(hand.getItemMeta().getDisplayName()).equals(ChatColor.RESET.toString())) {
+            return;
+        }
+
+        final ItemMeta meta = hand.getItemMeta();
+        meta.setDisplayName(meta.getDisplayName() + ChatColor.RESET);
+        hand.setItemMeta(meta);
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
