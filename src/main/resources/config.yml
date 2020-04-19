@@ -6,6 +6,9 @@ mods:
   chat:
     hide_join_leave_messages: true
     disable_posting_links: true
+    chat_cooldowns:
+      enabled: true
+      rate_limit: 3
     allowed_links:
       - 'discord'
   bots:
