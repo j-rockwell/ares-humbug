@@ -81,11 +81,11 @@ public final class MobstackMod implements HumbugMod, Listener {
         final YamlConfiguration config = Configs.getConfig(plugin, "config");
 
         this.enabled = config.getBoolean("mods.mob-stacking.enabled");
-        this.tagPrefix = ChatColor.translateAlternateColorCodes('&', config.getString("mods.mob-stacking.tag-prefix"));
-        this.stackInterval = config.getInt("mods.mob-stacking.stack-interval");
-        this.maxStackSize = config.getInt("mods.mob-stacking.max-stack-size");
-        this.breedCooldown = config.getInt("mods.mob-stacking.breed-cooldown");
-        this.stackTypes = config.getStringList("mods.mob-stacking.stack-types");
+        this.tagPrefix = ChatColor.translateAlternateColorCodes('&', config.getString("mods.mob_stacking.tag_prefix"));
+        this.stackInterval = config.getInt("mods.mob_stacking.stack_interval");
+        this.maxStackSize = config.getInt("mods.mob_stacking.max_stack_size");
+        this.breedCooldown = config.getInt("mods.mob_stacking.breed_cooldown");
+        this.stackTypes = config.getStringList("mods.mob_stacking.stack_types");
 
         this.stackTask = new Scheduler(plugin).sync(() -> {
             for (World world : Bukkit.getWorlds()) {

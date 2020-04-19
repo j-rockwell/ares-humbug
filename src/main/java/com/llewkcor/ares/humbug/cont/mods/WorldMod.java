@@ -44,13 +44,14 @@ public final class WorldMod implements HumbugMod, Listener {
     public void load() {
         final YamlConfiguration config = Configs.getConfig(plugin, "config");
 
-        this.enabled = config.getBoolean("mods.world.enabled");
-        this.enderchestDisabled = config.getBoolean("mods.world.enderchests");
-        this.blockExplosionsDisabled = config.getBoolean("mods.world.block_explosions");
-        this.entityBlockChangesDisabled = config.getBoolean("mods.world.entity_block_changes");
-        this.firespreadDisabled = config.getBoolean("mods.world.fire_spread");
-        this.cobblestoneGenDisabled = config.getBoolean("mods.world.cobblestone_generators");
-        this.bedbombDisabled = config.getBoolean("mods.world.bedbombs");
+        this.enderchestDisabled = config.getBoolean("mods.world.disable_enderchests");
+        this.blockExplosionsDisabled = config.getBoolean("mods.world.disable_block_explosions");
+        this.entityBlockChangesDisabled = config.getBoolean("mods.world.disable_entity_block_changes");
+        this.firespreadDisabled = config.getBoolean("mods.world.disable_fire_spread");
+        this.cobblestoneGenDisabled = config.getBoolean("mods.world.disable_cobblestone_generators");
+        this.bedbombDisabled = config.getBoolean("mods.world.disable_bedbombs");
+
+        this.enabled = true;
     }
 
     @Override

@@ -1,8 +1,21 @@
 mods:
+  # Toggle armor durability changes
+  # This will allow armor to take durability loss based on a sharpness to unbreaking enchantment ratio
+  # Example: Sharpness 5, Unbreaking 3 = 5 - 3 = 2 subtracted durability per hit
   armor_durability:
     enabled: true
+
+  # Patch exploits
+  # Right now this consists of server crashes
   exploit_fixes:
     enabled: true
+
+  # Toggle chat restrictions
+  # hide_join_leave_messages: Prevent %player% has joined and vice versa leave messages from displaying to normal users
+  # disable_posting_links: Enables the link whitelist in 'allowed_links' below
+  # chat_cooldowns.enabled: Limits the rate players can chat
+  # chat_cooldowns.rate_limit: Determines the time (in seconds) players have to wait between each message
+  # allowed_links: This list works as a link whitelist, adding 'youtube' would allow 'youtube.com' links to be posted
   chat:
     hide_join_leave_messages: true
     disable_posting_links: true
@@ -11,26 +24,47 @@ mods:
       rate_limit: 3
     allowed_links:
       - 'discord'
+
+  # Toggle bot prevention measures
+  # limit_connections: If enabled we will only allow the connections specified in 'max_conn_per_ip' to be connected at the same time
+  # max_conn_per_ip: Max amount of accounts with the same address allowed on the server at one time
   bots:
     limit_connections: true
     max_conn_per_ip: 2
+
+  # Toggle world limitations
+  # disable_enderchests: Disables opening Enderchests
+  # disable_block_explosions: Disables block explosions, this prevents blocks from being destroyed by TNT or Mobs
+  # disable_entity_block_changes: Disables Endermen from changing blocks
+  # disable_fire_spread: Disables the spread of fire
+  # disable_cobblestone_generators: Prevents water and lava from forming cobblestone
+  # disable_bedbombs: Prevents beds from being slept in while in The Nether, causing massive explosions that kill people easily
   world:
-    enabled: true
-    enderchests: true
-    block_explosions: true
-    entity_block_changes: true
+    disable_enderchests: true
+    disable_block_explosions: true
+    disable_entity_block_changes: true
     fire_spread: true
-    cobblestone_generators: true
+    disable_cobblestone_generators: true
     bedbombs: true
+
+  # Toggle minecart elevators
+  # Setting this to true will teleport players to the highest Y level above them when they exit a Minecart with a block over it
   elevator:
     enabled: true
-  mob-stacking:
+
+  # Enables Mob Stacking
+  # tag_prefix: Color prefix that is shown before the mobs stack count
+  # stack_interval: Time in seconds before each mob stacking attempt
+  # max_stack_size: Max size a mob stack can be
+  # breed-cooldown: Cooldown in seconds before you can breed a mobstack again
+  # stack_types: List of every entity we want to have stack
+  mob_stacking:
     enabled: true
-    tag-prefix: '&ax'
-    stack-interval: 5
+    tag_prefix: '&ax'
+    stack_interval: 5
     max-stack-size: 100
     breed-cooldown: 30
-    stack-types:
+    stack_types:
       - 'ZOMBIE'
       - 'SKELETON'
       - 'SPIDER'
@@ -40,6 +74,8 @@ mods:
       - 'PIG'
       - 'RABBIT'
       - 'SHEEP'
+
+  # Enables limiting of Enchantments and Potions
   kit-limits:
     enabled: true
     enchantments:
@@ -58,21 +94,39 @@ mods:
       - '373:16456'
       - '373:16460'
       - '373:16428'
+
+  # Adjusts the servers knockback on the server
+  # values.horizontal: Horizontal knockback velocity (1.0 vanilla)
+  # values.vertical: Vertical knockback velocity (1.0 vanilla)
   knockback:
     enabled: true
     values:
       horizontal: 1.0
       vertical: 1.0
+
+  # Enables old potion modifications
+  # old_health: Changes health splashes to double
+  # old_strength: Heavily nerfs strength
+  # old_regen: Heavily speeds up regeneration
   potions:
     enabled: true
     old_health: true
     old_strength: true
     old_regen: true
+
+  # EXP Modifications
+  # exp_base_multiplier: When a player is using looting or fortune, we apply a base multiplier to their EXP drops
+  # disable_monster_spawners: Disables monster spawners from spawning mobs
+  # bottle_exp_enabled: Allows premium users to bottle EXP
+  # looting_fortune_multiplier_enabled: Enabled the exp_base_multiplier to work
   xp:
     exp_base_multiplier: 2.5
     disable_monster_spawners: true
     bottle_exp_enabled: true
     looting_fortune_multiplier_enabled: true
+
+  # Hidden Ore Configuration
+  # Enabling this mod will cause ore veins to randomly spawn near players as they break stone
   mining:
     enabled: true
     findables:
