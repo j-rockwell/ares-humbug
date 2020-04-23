@@ -4,6 +4,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.injector.PacketConstructor;
+import com.google.common.collect.Lists;
 import com.llewkcor.ares.commons.event.PlayerDamagePlayerEvent;
 import com.llewkcor.ares.commons.logger.Logger;
 import com.llewkcor.ares.commons.util.general.Configs;
@@ -20,15 +21,21 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 public final class KnockbackMod implements HumbugMod, Listener {
     @Getter public final Humbug plugin;
     @Getter public final String name = "Knockback";
     @Getter @Setter public boolean enabled;
+    @Getter public final List<UUID> recentSprinters;
 
     @Getter @Setter public double horizontal;
     @Getter @Setter public double vertical;
@@ -36,6 +43,7 @@ public final class KnockbackMod implements HumbugMod, Listener {
     public KnockbackMod(Humbug plugin) {
         this.plugin = plugin;
         this.enabled = false;
+        this.recentSprinters = Collections.synchronizedList(Lists.newArrayList());
         this.horizontal = 1.0D;
         this.vertical = 1.0D;
 
@@ -55,6 +63,39 @@ public final class KnockbackMod implements HumbugMod, Listener {
     public void unload() {
         PlayerVelocityEvent.getHandlerList().unregister(this);
         PlayerDamagePlayerEvent.getHandlerList().unregister(this);
+    }
+
+    /**
+     * Returns true if this player has recently started sprinting
+     * @param player Player
+     * @return True if the player has recently sprinted
+     */
+    private boolean hasRecentlySprinted(Player player) {
+        return recentSprinters.contains(player.getUniqueId());
+    }
+
+    @EventHandler
+    public void onToggleSprint(PlayerToggleSprintEvent event) {
+        final Player player = event.getPlayer();
+
+        if (event.isSprinting()) {
+            if (!hasRecentlySprinted(player)) {
+                recentSprinters.add(player.getUniqueId());
+            }
+
+            return;
+        }
+
+        recentSprinters.remove(player.getUniqueId());
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        final Player player = event.getPlayer();
+
+        if (hasRecentlySprinted(player)) {
+            recentSprinters.remove(player.getUniqueId());
+        }
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
@@ -90,7 +131,7 @@ public final class KnockbackMod implements HumbugMod, Listener {
             return;
         }
 
-        final double sprintMultiplier = (damager.isSprinting() ? 0.8D : 0.5D);
+        final double sprintMultiplier = (damager.isSprinting() ? (hasRecentlySprinted(damager) ? 0.8D : 0.65D) : 0.5D);
         final double enchantMultiplier = (damager.getItemInHand() == null) ? 0 : damager.getItemInHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
         final double airMultiplier = damaged.isOnGround() ? 1 : 0.5;
 
@@ -107,6 +148,10 @@ public final class KnockbackMod implements HumbugMod, Listener {
             ProtocolLibrary.getProtocolManager().sendServerPacket(damaged, container);
         } catch (InvocationTargetException e) {
             Logger.error("Failed to send velocity packet");
+        } finally {
+            if (hasRecentlySprinted(damager)) {
+                recentSprinters.remove(damager.getUniqueId());
+            }
         }
     }
 }
