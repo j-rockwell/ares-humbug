@@ -59,35 +59,38 @@ public final class KitMod implements HumbugMod, Listener {
 
         this.enabled = config.getBoolean("mods.kit-limits.enabled");
 
-        for (String enchantName : config.getConfigurationSection("mods.kit-limits.enchantments").getKeys(false)) {
-            final Enchantment enchantment = Enchantment.getByName(enchantName);
+        if (config.get("mods.kit-limits.enchantments") != null) {
+            for (String enchantName : config.getConfigurationSection("mods.kit-limits.enchantments").getKeys(false)) {
+                final Enchantment enchantment = Enchantment.getByName(enchantName);
 
-            if (enchantment == null) {
-                Logger.error("Skipped enchantment '" + enchantName + "' - Enchantment not found");
-                continue;
+                if (enchantment == null) {
+                    Logger.error("Skipped enchantment '" + enchantName + "' - Enchantment not found");
+                    continue;
+                }
+
+                final boolean disabled = config.getBoolean("mods.kit-limits.enchantments." + enchantName + ".disabled");
+                final int maxLevel = config.getInt("mods.kit-limits.enchantments." + enchantName + ".max-level");
+
+                final EnchantLimit limit = new EnchantLimit(enchantment, disabled, maxLevel);
+                enchantLimits.add(limit);
             }
-
-            final boolean disabled = config.getBoolean("mods.kit-limits.enchantments." + enchantName + ".disabled");
-            final int maxLevel = config.getInt("mods.kit-limits.enchantments." + enchantName + ".max-level");
-
-            final EnchantLimit limit = new EnchantLimit(enchantment, disabled, maxLevel);
-            enchantLimits.add(limit);
         }
 
-        for (String potionData : (List<String>)config.getList("mods.kit-limits.banned-potions")) {
-            final String[] split = potionData.split(":");
+        if (config.get("mods.kit-limits.banned-potions") != null) {
+            for (String potionData : (List<String>)config.getList("mods.kit-limits.banned-potions")) {
+                final String[] split = potionData.split(":");
 
-            if (split.length != 2) {
-                Logger.error("Bad potion id " + potionData);
-                continue;
-            }
+                if (split.length != 2) {
+                    Logger.error("Bad potion id " + potionData);
+                    continue;
+                }
 
-            try {
-                final PotionLimit limit = new PotionLimit(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
-                potionLimits.add(limit);
-            } catch (NumberFormatException ex) {
-                Logger.error("Bad potion id " + potionData);
-                continue;
+                try {
+                    final PotionLimit limit = new PotionLimit(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                    potionLimits.add(limit);
+                } catch (NumberFormatException ex) {
+                    Logger.error("Bad potion id " + potionData);
+                }
             }
         }
 
