@@ -108,7 +108,7 @@ public final class WorldMod implements HumbugMod, Listener {
 
     @EventHandler
     public void onFireSpread(BlockSpreadEvent event) {
-        if (!isEnabled() || !isFirespreadDisabled()) {
+        if (!isEnabled() || !isFireSpreadDisabled()) {
             return;
         }
 
