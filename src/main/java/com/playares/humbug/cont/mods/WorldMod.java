@@ -192,7 +192,6 @@ public final class WorldMod implements HumbugMod, Listener {
         }
 
         final Block source = event.getSource();
-        final Block block = event.getBlock();
 
         if (source.getType().equals(Material.FIRE)) {
             event.setCancelled(true);
