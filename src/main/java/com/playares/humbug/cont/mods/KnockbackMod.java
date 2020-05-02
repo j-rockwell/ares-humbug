@@ -138,7 +138,7 @@ public final class KnockbackMod implements HumbugMod, Listener {
             return;
         }
 
-        final double sprintMultiplier = (damager.isSprinting() ? (hasRecentlySprinted(damager) ? 0.8D : 0.65D) : 0.5D);
+        final double sprintMultiplier = (damager.isSprinting() ? (hasRecentlySprinted(damager) ? resetSprintModifier : sprintModifier) : walkModifier);
         final double enchantMultiplier = (damager.getItemInHand() == null) ? 0 : damager.getItemInHand().getEnchantmentLevel(Enchantment.KNOCKBACK);
         final double airMultiplier = damaged.isOnGround() ? airModifier : (airModifier / 2);
 
