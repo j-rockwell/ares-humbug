@@ -13,16 +13,21 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import java.util.List;
 
 public final class WorldMod implements HumbugMod, Listener {
     @Getter public final HumbugService humbug;
     @Getter public final String name = "World";
     @Getter @Setter public boolean enabled;
 
+    @Getter public boolean fireSpreadDisabled;
+    @Getter public boolean pistonBreakDoorsDisabled;
     @Getter public boolean enderchestDisabled;
     @Getter public boolean blockExplosionsDisabled;
     @Getter public boolean entityBlockChangesDisabled;
@@ -41,6 +46,8 @@ public final class WorldMod implements HumbugMod, Listener {
     public void load() {
         final YamlConfiguration config = Configs.getConfig(humbug.getOwner(), "humbug");
 
+        this.fireSpreadDisabled = config.getBoolean("mods.world.disable_fire_spread");
+        this.pistonBreakDoorsDisabled = config.getBoolean("mods.world.disable_piston_break_door");
         this.enderchestDisabled = config.getBoolean("mods.world.disable_enderchests");
         this.blockExplosionsDisabled = config.getBoolean("mods.world.disable_block_explosions");
         this.entityBlockChangesDisabled = config.getBoolean("mods.world.disable_entity_block_changes");
@@ -156,5 +163,39 @@ public final class WorldMod implements HumbugMod, Listener {
         }
 
         event.setCancelled(true);
+    }
+
+    @EventHandler (priority = EventPriority.HIGH)
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        if (event.isCancelled() || !isPistonBreakDoorsDisabled()) {
+            return;
+        }
+
+        final List<Block> modified = event.getBlocks();
+
+        for (Block modifiedBlock : modified) {
+            if (modifiedBlock == null || modifiedBlock.getType().equals(Material.AIR)) {
+                continue;
+            }
+
+            if (modifiedBlock.getType().name().contains("_DOOR")) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockSpread(BlockSpreadEvent event) {
+        if (event.isCancelled() || !isFireSpreadDisabled()) {
+            return;
+        }
+
+        final Block source = event.getSource();
+        final Block block = event.getBlock();
+
+        if (source.getType().equals(Material.FIRE)) {
+            event.setCancelled(true);
+        }
     }
 }

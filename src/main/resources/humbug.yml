@@ -40,11 +40,13 @@ mods:
   # disable_cobblestone_generators: Prevents water and lava from forming cobblestone
   # disable_bedbombs: Prevents beds from being slept in while in The Nether, causing massive explosions that kill people easily
   world:
+    disable_fire_spread: true
+    disable_piston_break_door: true
     disable_enderchests: true
     disable_block_explosions: true
     disable_entity_block_changes: true
     fire_spread: true
-    disable_cobblestone_generators: true
+    disable_cobblestone_generators: false
     bedbombs: true
 
   # Toggle minecart elevators
