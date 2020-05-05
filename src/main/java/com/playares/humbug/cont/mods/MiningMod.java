@@ -2,6 +2,7 @@ package com.playares.humbug.cont.mods;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.playares.humbug.HumbugService;
 import com.playares.humbug.cont.HumbugMod;
 import com.playares.commons.location.BLocatable;
@@ -24,6 +25,7 @@ import org.bukkit.event.block.*;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -169,6 +171,30 @@ public final class MiningMod implements HumbugMod, Listener {
         player.sendMessage(ChatColor.GOLD + "You found " + ChatColor.AQUA + blocks.size() + " " + findable.getName() + ChatColor.GOLD + " nearby");
 
         return true;
+    }
+
+    /**
+     * Runs a simulation offering what would be received using the current mining values
+     * @param simulations Simulations
+     * @return Map of Findables and the amount found
+     */
+    public Map<Findable, Integer> simulate(int simulations) {
+        final Map<Findable, Integer> result = Maps.newHashMap();
+
+        for (int i = 0; i < simulations; i++) {
+            for (Findable possible : findables) {
+                if (random.nextInt(possible.getTotalPulls()) > possible.getRequiredPulls()) {
+                    continue;
+                }
+
+                final int size = random.nextInt(possible.maxVeinSize);
+                final int current = result.getOrDefault(possible, 0);
+
+                result.put(possible, (size + current));
+            }
+        }
+
+        return result;
     }
 
     @EventHandler
