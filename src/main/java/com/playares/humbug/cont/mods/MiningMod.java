@@ -3,24 +3,22 @@ package com.playares.humbug.cont.mods;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.playares.commons.util.bukkit.Players;
 import com.playares.humbug.HumbugService;
 import com.playares.humbug.cont.HumbugMod;
 import com.playares.commons.location.BLocatable;
 import com.playares.commons.logger.Logger;
 import com.playares.commons.util.general.Configs;
+import com.playares.humbug.event.FoundOreEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.block.*;
 import org.bukkit.inventory.ItemStack;
 
@@ -60,6 +58,7 @@ public final class MiningMod implements HumbugMod, Listener {
         for (String rewardMaterialName : config.getConfigurationSection("mods.mining.findables").getKeys(false)) {
             final String insideMaterialName = config.getString("mods.mining.findables." + rewardMaterialName + ".inside");
             final String environmentName = config.getString("mods.mining.findables." + rewardMaterialName + ".environment");
+            final ChatColor color = ChatColor.getByChar(config.getString("mods.mining.findables." + rewardMaterialName + ".color").charAt(0));
             final int minVeinSize = config.getInt("mods.mining.findables." + rewardMaterialName + ".min_vein");
             final int maxVeinSize = config.getInt("mods.mining.findables." + rewardMaterialName + ".max_vein");
             final int minSpawnHeight = config.getInt("mods.mining.findables." + rewardMaterialName + ".min_spawn_height");
@@ -73,7 +72,7 @@ public final class MiningMod implements HumbugMod, Listener {
             final Material insideMaterial = Material.getMaterial(insideMaterialName);
             final World.Environment environment = World.Environment.valueOf(environmentName);
 
-            final Findable findable = new Findable(insideMaterial, rewardMaterial, environment, minVeinSize, maxVeinSize, minSpawnHeight, maxSpawnHeight, requiredPull, totalPull);
+            final Findable findable = new Findable(insideMaterial, rewardMaterial, environment, color, minVeinSize, maxVeinSize, minSpawnHeight, maxSpawnHeight, requiredPull, totalPull);
             findables.add(findable);
         }
 
@@ -162,13 +161,20 @@ public final class MiningMod implements HumbugMod, Listener {
             blocks.add(toAdd);
         }
 
+        final FoundOreEvent event = new FoundOreEvent(findable, blocks);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return false;
+        }
+
+        player.sendMessage(ChatColor.GOLD + " * " + ChatColor.GRAY + "You found " + ChatColor.GOLD + "x" + findables.size() + " " + findable.getColor() + findable.getName() + " " + ChatColor.GRAY + "nearby");
+
         blocks.forEach(b -> {
-            // Worlds.playSound(b.getLocation(), Sound.BLOCK_STONE_BREAK);
-            // Worlds.spawnParticle(b.getLocation(), Particle.VILLAGER_HAPPY, 10, 0.5);
+            Players.playSound(player, Sound.DIG_STONE);
+            Players.spawnEffect(player, b.getLocation(), Effect.PARTICLE_SMOKE, 25, 5);
             b.setType(findable.getMaterial());
         });
-
-        player.sendMessage(ChatColor.GOLD + "You found " + ChatColor.AQUA + blocks.size() + " " + findable.getName() + ChatColor.GOLD + " nearby");
 
         return true;
     }
@@ -284,6 +290,7 @@ public final class MiningMod implements HumbugMod, Listener {
         @Getter public final Material inside;
         @Getter public final Material material;
         @Getter public final World.Environment environment;
+        @Getter public final ChatColor color;
         @Getter public final int minVeinSize;
         @Getter public final int maxVeinSize;
         @Getter public final int minSpawnHeight;
