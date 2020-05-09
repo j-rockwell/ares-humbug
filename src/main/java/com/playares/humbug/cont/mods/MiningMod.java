@@ -154,7 +154,7 @@ public final class MiningMod implements HumbugMod, Listener {
 
             final Block toAdd = block.getWorld().getBlockAt(x, y, z);
 
-            if (!toAdd.getType().equals(findable.getInside())) {
+            if (toAdd == null || !toAdd.getType().equals(findable.getInside())) {
                 continue;
             }
 
