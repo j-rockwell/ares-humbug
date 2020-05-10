@@ -124,8 +124,8 @@ public final class XPMod implements HumbugMod, Listener {
             bottle.setAmount(bottle.getAmount() - 1);
         }
 
-        player.setLevel(player.getLevel() + exp);
-        player.sendMessage(ChatColor.GREEN + "You consumed " + ChatColor.AQUA + exp + " levels" + ChatColor.GREEN + " of Experience");
+        setTotalExperience(player, (exp + getTotalExperience(player)));
+        player.sendMessage(ChatColor.GREEN + "You consumed " + ChatColor.AQUA + exp + " experience");
     }
 
     @Override
@@ -209,11 +209,82 @@ public final class XPMod implements HumbugMod, Listener {
         }
     }
 
+    /**
+     * Sets the total experience for the provided Player
+     * @param player Player
+     * @param exp Experience
+     */
+    public static void setTotalExperience(final Player player, final int exp) {
+        if (exp < 0) {
+            throw new IllegalArgumentException("Experience is negative!");
+        }
+
+        player.setExp(0);
+        player.setLevel(0);
+        player.setTotalExperience(0);
+
+        int amount = exp;
+        while (amount > 0) {
+            final int expToLevel = getExpAtLevel(player.getLevel());
+            amount -= expToLevel;
+
+            if (amount >= 0) {
+                // give until next level
+                player.giveExp(expToLevel);
+            }
+            else {
+                // give the rest
+                amount += expToLevel;
+                player.giveExp(amount);
+                amount = 0;
+            }
+        }
+    }
+
+    /**
+     * Returns the EXP for the provided Minecraft EXP Level
+     * @param level EXP Level
+     * @return EXP at Level
+     */
+    public  static  int getExpAtLevel(final int level) {
+        if (level <= 15) {
+            return (2*level) + 7;
+        }
+
+        if (level <= 30) {
+            return (5*level) -38;
+        }
+
+        return (9*level)-158;
+
+    }
+
+    /**
+     * Returns the total experience for the provided Player
+     * @param player Player
+     * @return Total Experience Points
+     */
+    public static int getTotalExperience(final Player player) {
+        int exp = Math.round(getExpAtLevel(player.getLevel()) * player.getExp());
+        int currentLevel = player.getLevel();
+
+        while (currentLevel > 0) {
+            currentLevel--;
+            exp += getExpAtLevel(currentLevel);
+        }
+
+        if (exp < 0) {
+            exp = Integer.MAX_VALUE;
+        }
+
+        return exp;
+    }
+
     public final class BottleCommand extends BaseCommand {
         @CommandAlias("bottle")
         @Description("Bottle all of your current EXP")
         public void onBottle(Player player) {
-            final int levels = player.getLevel();
+            final int experience = XPMod.getTotalExperience(player);
             final ItemStack hand = player.getItemInHand();
 
             if (!isBottleExpEnabled()) {
@@ -227,8 +298,8 @@ public final class XPMod implements HumbugMod, Listener {
                 return;
             }
 
-            if (levels <= 0) {
-                player.sendMessage(ChatColor.RED + "You need at least 1 level to bottle experience");
+            if (experience <= 0) {
+                player.sendMessage(ChatColor.RED + "You do not have any experience to bottle");
                 return;
             }
 
@@ -239,7 +310,7 @@ public final class XPMod implements HumbugMod, Listener {
 
             final ItemStack item = new ItemBuilder()
                     .setMaterial(Material.EXP_BOTTLE)
-                    .addLore(ChatColor.DARK_PURPLE + "" + levels + " exp")
+                    .addLore(ChatColor.DARK_PURPLE + "" + experience + " exp")
                     .build();
 
             if (hand.getAmount() <= 1) {
@@ -250,7 +321,9 @@ public final class XPMod implements HumbugMod, Listener {
 
             player.updateInventory();
             player.setLevel(0);
-            player.sendMessage(ChatColor.GREEN + "You have bottled " + levels + " levels of Experience");
+            player.setExp(0);
+            player.setTotalExperience(0);
+            player.sendMessage(ChatColor.GREEN + "You have bottled " + experience + " experience");
 
             if (player.getInventory().firstEmpty() == -1) {
                 player.getWorld().dropItem(player.getLocation(), item);
