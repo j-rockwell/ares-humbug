@@ -3,20 +3,22 @@ package com.playares.humbug.cont.mods;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Description;
+import com.google.common.collect.Lists;
+import com.playares.commons.logger.Logger;
 import com.playares.humbug.HumbugService;
 import com.playares.humbug.cont.HumbugMod;
 import com.playares.commons.item.ItemBuilder;
 import com.playares.commons.util.general.Configs;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.ThrownExpBottle;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -39,8 +41,9 @@ public final class XPMod implements HumbugMod, Listener {
 
     @Getter @Setter public boolean bottleExpEnabled;
     @Getter @Setter public double baseExpMultiplier;
-    @Getter @Setter public boolean spawnersDisabled;
     @Getter @Setter public boolean lootingFortuneMultiplierEnabled;
+    @Getter @Setter public boolean spawnersDisabled;
+    @Getter public List<EntityType> whitelistedSpawnerTypes;
 
     public XPMod(HumbugService humbug) {
         this.humbug = humbug;
@@ -54,9 +57,23 @@ public final class XPMod implements HumbugMod, Listener {
 
         this.enabled = true;
         this.bottleExpEnabled = config.getBoolean("mods.xp.bottle_exp_enabled");
-        this.spawnersDisabled = config.getBoolean("mods.exp.disable_monster_spawners");
         this.baseExpMultiplier = config.getDouble("mods.xp.exp_base_multiplier");
-        this.lootingFortuneMultiplierEnabled = config.getBoolean("mods.exp.looting_fortune_multiplier_enabled");
+        this.lootingFortuneMultiplierEnabled = config.getBoolean("mods.xp.looting_fortune_multiplier_enabled");
+        this.spawnersDisabled = config.getBoolean("mods.xp.disable_monster_spawners");
+        this.whitelistedSpawnerTypes = Lists.newArrayList();
+
+        for (String spawnerTypeName : config.getStringList("mods.xp.disabled_monster_spawners.whitelisted-spawners")) {
+            final EntityType type;
+
+            try {
+                type = EntityType.valueOf(spawnerTypeName);
+            } catch (IllegalArgumentException ex) {
+                Logger.error("Invalid whitelisted mob spawner type: " + spawnerTypeName);
+                continue;
+            }
+
+            whitelistedSpawnerTypes.add(type);
+        }
 
         if (initialized) {
             return;
@@ -174,11 +191,34 @@ public final class XPMod implements HumbugMod, Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onCreatureSpawn(CreatureSpawnEvent event) {
-        if (!isEnabled() || isSpawnersDisabled() || event.isCancelled()) {
+        if (!isEnabled() || !isSpawnersDisabled() || event.isCancelled()) {
             return;
         }
 
-        if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.SPAWNER)) {
+        if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.SPAWNER) &&
+                !whitelistedSpawnerTypes.contains(event.getEntityType())) {
+
+            event.setCancelled(true);
+
+        }
+    }
+
+    @EventHandler
+    public void onSpawnerBreak(BlockBreakEvent event) {
+        if (!isEnabled() || !isSpawnersDisabled() || event.isCancelled()) {
+            return;
+        }
+
+        final Block block = event.getBlock();
+
+        if (block == null || !block.getType().equals(Material.MOB_SPAWNER)) {
+            return;
+        }
+
+        final CreatureSpawner spawner = (CreatureSpawner)block;
+
+        if (whitelistedSpawnerTypes.contains(spawner.getSpawnedType())) {
+            event.getPlayer().sendMessage(ChatColor.RED + "This type of monster spawner can not be broken");
             event.setCancelled(true);
         }
     }
